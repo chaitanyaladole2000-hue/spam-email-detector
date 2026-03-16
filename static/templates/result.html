@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Result - AI Spam Detector</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* =========================
+           PERFECT MATCH GLOBAL THEME
+        ========================= */
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #f59e0b;
+            --accent: #10b981;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --glass: rgba(255,255,255,0.12);
+            --glass-dark: rgba(255,255,255,0.08);
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --border: rgba(255,255,255,0.15);
+            --shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            --shadow-hover: 0 35px 60px -12px rgba(0,0,0,0.35);
+            --spam-glow: 0 0 40px rgba(239,68,68,0.5);
+            --ham-glow: 0 0 40px rgba(16,185,129,0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-primary);
+            overflow-x: hidden;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* =========================
+           BACKGROUND EFFECTS (IDENTICAL)
+        ========================= */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120,119,198,0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255,119,198,0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120,219,255,0.3) 0%, transparent 50%);
+            z-index: -2;
+            animation: bgShift 20s ease-in-out infinite;
+        }
+
+        @keyframes bgShift {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(180deg); }
+        }
+
+        /* Floating particles */
+        .floating-particles {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            border-radius: 50%;
+            animation: floatParticles 15s infinite linear;
+        }
+
+        @keyframes floatParticles {
+            0% { transform: translateY(100vh) scale(0) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100px) scale(1) rotate(360deg); opacity: 0; }
+        }
+
+        /* =========================
+           NAVBAR (IDENTICAL)
+        ========================= */
+        .navbar {
+            backdrop-filter: blur(25px);
+            background: rgba(15,15,35,0.9);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+        }
+
+        .navbar-brand {
+            font-weight: 800;
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* =========================
+           RESULT SECTION
+        ========================= */
+        .result-section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 120px 0;
+        }
+
+        .result-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* =========================
+           ADVANCED RESULT HEADER
+        ========================= */
+        .result-header {
+            text-align: center;
+            padding: 60px 40px;
+            border-radius: 32px;
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(20px);
+            transform: scale(0.95);
+            animation: resultPulse 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes resultPulse {
+            0% {
+                opacity: 0;
+                transform: scale(0.8) translateY(50px);
+            }
+            70% {
+                transform: scale(1.05);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .result-header.spam-header {
+            background: linear-gradient(135deg, rgba(239,68,68,0.95) 0%, rgba(239,68,68,0.85) 100%);
+            border: 2px solid rgba(239,68,68,0.3);
+            box-shadow: var(--spam-glow), var(--shadow);
+        }
+
+        .result-header.ham-header {
+            background: linear-gradient(135deg, rgba(16,185,129,0.95) 0%, rgba(16,185,129,0.85) 100%);
+            border: 2px solid rgba(16,185,129,0.3);
+            box-shadow: var(--ham-glow), var(--shadow);
+        }
+
+        .result-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 15px 20px rgba(0,0,0,0.3));
+            animation: iconBounce 2s infinite;
+        }
+
+        @keyframes iconBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .result-title {
+            font-size: 2.8rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .result-subtitle {
+            font-size: 1.3rem;
+            opacity: 0.95;
+        }
+
+        /* =========================
+           GLASS RESULT CARDS
+        ========================= */
+        .glass-card {
+            background: var(--glass);
+            backdrop-filter: blur(25px) saturate(180%);
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            padding: 45px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 30px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), var(--accent), transparent);
+        }
+
+        .glass-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        /* =========================
+           ENHANCED CONFIDENCE BAR
+        ========================= */
+        .confidence-section {
+            text-align: center;
+            padding: 40px 0;
+        }
+
+        .confidence-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .confidence-bar-container {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(15px);
+            border: 2px solid var(--border);
+            border-radius: 20px;
+            height: 32px;
+            overflow: hidden;
+            margin: 30px auto;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .confidence-bar {
+            height: 100%;
+            border-radius: 18px;
+            transition: all 2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .confidence-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+            animation: shine 2s infinite;
+        }
+
+        @keyframes shine {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .confidence-bar.spam-bar {
+            background: linear-gradient(90deg, var(--danger), #dc2626);
+            box-shadow: inset 0 0 20px rgba(239,68,68,0.4);
+        }
+
+        .confidence-bar.ham-bar {
+            background: linear-gradient(90deg, var(--success), #059669);
+            box-shadow: inset 0 0 20px rgba(16,185,129,0.4);
+        }
+
+        #confidenceText {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-top: 20px;
+            background: linear-gradient(135deg, var(--text-primary), var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* =========================
+           EMAIL PREVIEW
+        ========================= */
+        .email-preview {
+            background: var(--glass-dark);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 25px;
+            margin: 30px 0;
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .email-preview strong {
+            color: var(--accent);
+            display: block;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        /* =========================
+           ACTION BUTTONS
+        ========================= */
+        .action-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .btn-action {
+            padding: 16px 40px;
+            font-weight: 600;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary-action {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border: none;
+            color: white;
+            box-shadow: var(--shadow);
+        }
+
+        .btn-secondary-action {
+            background: transparent;
+            border: 2px solid var(--border);
+            color: var(--text-primary);
+        }
+
+        .btn-action:hover {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .btn-secondary-action:hover {
+            border-color: var(--primary);
+            background: rgba(99,102,241,0.15);
+        }
+
+        /* =========================
+           HISTORY SECTION
+        ========================= */
+        .history-section {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            padding: 40px;
+            margin-top: 40px;
+        }
+
+        .history-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 25px;
+            background: var(--glass-dark);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.15);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .stat-total { color: var(--primary); }
+        .stat-spam { color: var(--danger); }
+        .stat-ham { color: var(--success); }
+
+        .recent-history {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .history-item:hover {
+            background: rgba(255,255,255,0.1);
+            padding-left: 15px;
+            border-radius: 12px;
+        }
+
+        .history-badge {
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+
+        /* =========================
+           FOOTER (IDENTICAL)
+        ========================= */
+        footer {
+            background: rgba(15,15,35,0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border);
+            padding: 40px 0 20px;
+        }
+
+        /* =========================
+           RESPONSIVE
+        ========================= */
+        @media (max-width: 768px) {
+            .result-header { padding: 40px 20px; }
+            .result-title { font-size: 2rem; }
+            .action-buttons { flex-direction: column; align-items: center; }
+            .history-stats { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Floating Particles -->
+    <div class="floating-particles" id="particles"></div>
+
+    <!-- NAVBAR (IDENTICAL) -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-shield-alt me-2"></i>AI Spam Detector
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/predict">Check Email</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/features">Features</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="result-section">
+        <div class="container">
+            <div class="result-container">
+                
+                <!-- DYNAMIC RESULT HEADER -->
+                {% if result.is_spam %}
+                <div class="result-header spam-header" role="alert">
+                    <div class="result-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="result-title">🚨 SPAM DETECTED</div>
+                    <div class="result-subtitle">This email contains suspicious patterns and should be avoided</div>
+                </div>
+                {% else %}
+                <div class="result-header ham-header" role="alert">
+                    <div class="result-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="result-title">✅ SAFE EMAIL</div>
+                    <div class="result-subtitle">This email appears completely legitimate</div>
+                </div>
+                {% endif %}
+
+                <!-- CONFIDENCE SECTION -->
+                <div class="glass-card confidence-section">
+                    <div class="confidence-title">
+                        <i class="fas fa-bullseye me-2"></i>
+                        AI Confidence Score
+                    </div>
+                    
+                    <div class="confidence-bar-container">
+                        <div id="confidenceBar"
+                             class="confidence-bar {% if result.is_spam %}spam-bar{% else %}ham-bar{% endif %}"
+                             style="width: 0%"></div>
+                    </div>
+                    
+                    <div id="confidenceText"
+                         class="fw-bold"
+                         data-confidence="{{ result.confidence }}">
+                        Calculating confidence...
+                    </div>
+                </div>
+
+                <!-- EMAIL PREVIEW -->
+                <div class="glass-card">
+                    <div class="email-preview">
+                        <strong><i class="fas fa-search me-2"></i>Analyzed Content:</strong>
+                        <div>{{ email_text | e | truncate(800) }}</div>
+                        {% if email_text.__len__() > 800 %}
+                        <div class="text-muted small mt-2">... (content truncated)</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- ACTION BUTTONS -->
+                <div class="glass-card text-center">
+                    <div class="action-buttons">
+                        <a href="/predict" class="btn-action btn-primary-action">
+                            <i class="fas fa-redo"></i>
+                            Analyze Another
+                        </a>
+                        <a href="/" class="btn-action btn-secondary-action">
+                            <i class="fas fa-home"></i>
+                            Back to Home
+                        </a>
+                    </div>
+                </div>
+
+                <!-- HISTORY SECTION -->
+                <div class="glass-card history-section">
+                    <h3 class="text-center mb-4" style="background: linear-gradient(135deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                        <i class="fas fa-chart-bar me-2"></i>Detection History
+                    </h3>
+                    
+                    <div class="history-stats">
+                        <div class="stat-card">
+                            <div class="stat-number stat-total">{{ history.total }}</div>
+                            <div class="text-muted">Total Scans</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number stat-spam">{{ history.spam }}</div>
+                            <div class="text-muted">Spam Detected</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number stat-ham">{{ history.ham }}</div>
+                            <div class="text-muted">Safe Emails</div>
+                        </div>
+                    </div>
+
+                    {% if history.recent %}
+                    <div class="recent-history">
+                        {% for item in history.recent %}
+                        <div class="history-item">
+                            <span class="text-muted">{{ item.email | truncate(60) }}</span>
+                            <div>
+                                {% if item.is_spam %}
+                                <span class="badge history-badge" style="background: rgba(239,68,68,0.2); color: var(--danger);">SPAM</span>
+                                {% else %}
+                                <span class="badge history-badge" style="background: rgba(16,185,129,0.2); color: var(--success);">HAM</span>
+                                {% endif %}
+                                <span class="ms-2 fw-bold">{{ item.confidence }}%</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER (IDENTICAL) -->
+    <footer class="text-center">
+        <div class="container">
+            <p class="mb-3 fw-bold">AI Spam Email Detector</p>
+            <p class="text-muted mb-2">Powered by Machine Learning & Flask</p>
+            <div class="d-flex justify-content-center align-items-center">
+                <span class="me-3 text-muted">© 2026 All Rights Reserved</span>
+                <div>
+                    <a href="#" class="text-decoration-none me-3"><i class="fab fa-github fs-5"></i></a>
+                    <a href="#" class="text-decoration-none me-3"><i class="fab fa-linkedin fs-5"></i></a>
+                    <a href="#" class="text-decoration-none"><i class="fab fa-twitter fs-5"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Generate floating particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            for (let i = 0; i < 35; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.width = particle.style.height = (Math.random() * 4 + 2) + 'px';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (Math.random() * 10 + 12) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Enhanced confidence animation
+        const confidence = parseFloat(document.getElementById("confidenceText").dataset.confidence);
+        const bar = document.getElementById("confidenceBar");
+        const text = document.getElementById("confidenceText");
+
+        // Animate confidence bar with sound-like effect
+        let progress = 0;
+        const updateProgress = () => {
+            if (progress < confidence) {
+                progress += 2;
+                bar.style.width = Math.min(progress, confidence) + '%';
+                text.textContent = Math.round(Math.min(progress, confidence)) + '% Confidence';
+                
+                if (progress < confidence) {
+                    requestAnimationFrame(updateProgress);
+                } else {
+                    text.textContent = confidence + '% Confidence';
+                    text.style.background = 'linear-gradient(135deg, var(--accent), var(--success))';
+                    text.style.webkitBackgroundClip = 'text';
+                    text.style.webkitTextFillColor = 'transparent';
+                }
+            }
+        };
+
+        // Start animation after page load
+        window.addEventListener('load', () => {
+            setTimeout(updateProgress, 500);
+        });
+
+        // Smooth scroll animations
+        function handleScrollAnimations() {
+            const elements = document.querySelectorAll('.glass-card');
+            elements.forEach((el, index) => {
+                const rect = el.getBoundingClientRect();
+                if (rect.top < window.innerHeight - 100) {
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                }
+            });
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            createParticles();
+            handleScrollAnimations();
+            window.addEventListener('scroll', handleScrollAnimations);
+        });
+
+        // Navbar scroll effect
+        window.addEventListener('scroll', () => {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.style.background = 'rgba(15,15,35,0.95)';
+            } else {
+                navbar.style.background = 'rgba(15,15,35,0.9)';
+            }
+        });
+    </script>
+</body>
+</html>
