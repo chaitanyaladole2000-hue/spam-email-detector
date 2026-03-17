@@ -1,147 +1,174 @@
 """
-Spam Email Detection Model Training Script
-This script trains the model on the spam.tsv file
+Spam Email Detection - Final Training Script
+Uses TF-IDF + Logistic Regression with proper evaluation
 """
 
 import pandas as pd
-import numpy as np
 import re
 import string
+import joblib
+import os
+
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
-import joblib
-import os
 
+# --------------------------------------------------
+# Header
+# --------------------------------------------------
 print("=" * 60)
-print("SPAM EMAIL DETECTION MODEL TRAINING")
+print("SPAM EMAIL DETECTION - MODEL TRAINING")
 print("=" * 60)
 
-# Step 1: Load dataset from TSV file
-print("\n[1/5] Loading dataset from spam.tsv...")
-if not os.path.exists('spam.tsv'):
-    print("ERROR: spam.tsv not found!")
-    print("Please create spam.tsv with 'text' and 'label' columns.")
-    exit(1)
+# --------------------------------------------------
+# Step 1: Load Dataset
+# --------------------------------------------------
+print("\n[1/6] Loading dataset...")
 
-# Read TSV file (tab-separated)
-df = pd.read_csv('spam.tsv', sep='\t')
+if not os.path.exists("spam.tsv"):
+    print("ERROR: spam.tsv file not found!")
+    exit()
 
-print(f"    Dataset loaded: {len(df)} samples")
-print(f"    Columns: {list(df.columns)}")
+# Load dataset
+df = pd.read_csv("spam.tsv", sep="\t", encoding='latin-1')
 
-# Check if required columns exist
-if 'text' not in df.columns or 'label' not in df.columns:
-    print("ERROR: spam.tsv must have 'text' and 'label' columns!")
-    print(f"Found columns: {list(df.columns)}")
-    exit(1)
+# Force correct column names
+df.columns = ['label', 'message']
 
-print(f"    Spam samples: {sum(df['label'] == 1)}")
-print(f"    Ham samples: {sum(df['label'] == 0)}")
+print(f"Dataset size: {len(df)} emails")
 
-# Check for missing values
-if df['text'].isnull().any():
-    print("    Warning: Found missing values. Cleaning...")
-    df = df.dropna(subset=['text'])
-    print(f"    After cleaning: {len(df)} samples")
+# Convert labels: spam → 1, ham → 0
+df['label'] = df['label'].map({'spam': 1, 'ham': 0})
 
-# Step 2: Preprocess text
-print("\n[2/5] Preprocessing text data...")
+print(f"Spam: {sum(df['label'] == 1)} | Ham: {sum(df['label'] == 0)}")
+
+# Remove missing values
+df = df.dropna(subset=['message'])
+
+# --------------------------------------------------
+# Step 2: Text Preprocessing
+# --------------------------------------------------
+print("\n[2/6] Cleaning text...")
 
 def clean_text(text):
-    """Clean and preprocess email text"""
-    if pd.isna(text):
-        return ""
-    
     text = str(text).lower()
-    text = re.sub(r'http\S+|www\S+|https\S+', '', text)
-    text = re.sub(r'\S+@\S+', '', text)
-    text = re.sub(r'\d+', '', text)
+
+    # Remove URLs
+    text = re.sub(r"http\S+|www\S+", "", text)
+
+    # Remove email addresses
+    text = re.sub(r"\S+@\S+", "", text)
+
+    # Keep numbers (important for spam detection)
+
+    # Remove punctuation
     text = text.translate(str.maketrans('', '', string.punctuation))
-    text = ' '.join(text.split())
-    
+
+    # Remove extra spaces
+    text = " ".join(text.split())
+
     return text
 
-df['cleaned_text'] = df['text'].apply(clean_text)
-print("    Text cleaning completed!")
+df['cleaned'] = df['message'].apply(clean_text)
 
-# Step 3: Split data
-print("\n[3/5] Splitting data into train and test sets...")
-X = df['cleaned_text']
-y = df['label']
+# --------------------------------------------------
+# Step 3: Train-Test Split
+# --------------------------------------------------
+print("\n[3/6] Splitting dataset...")
 
 X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42, stratify=y
+    df['cleaned'],
+    df['label'],
+    test_size=0.2,
+    random_state=42,
+    stratify=df['label']
 )
 
-print(f"    Training samples: {len(X_train)}")
-print(f"    Testing samples: {len(X_test)}")
+print(f"Train: {len(X_train)} | Test: {len(X_test)}")
 
-# Step 4: Create TF-IDF features
-print("\n[4/5] Creating TF-IDF features...")
-vectorizer = TfidfVectorizer(max_features=5000, ngram_range=(1, 2))
+# --------------------------------------------------
+# Step 4: Feature Extraction (TF-IDF)
+# --------------------------------------------------
+print("\n[4/6] Extracting features...")
+
+vectorizer = TfidfVectorizer(
+    max_features=5000,
+    ngram_range=(1, 2),
+    stop_words='english'
+)
+
 X_train_tfidf = vectorizer.fit_transform(X_train)
 X_test_tfidf = vectorizer.transform(X_test)
-print(f"    Feature extraction completed!")
-print(f"    Number of features: {X_train_tfidf.shape[1]}")
 
-# Step 5: Train Model
-print("\n[5/5] Training Logistic Regression model...")
-model = LogisticRegression(max_iter=1000, random_state=42)
+print(f"Total features: {X_train_tfidf.shape[1]}")
+
+# --------------------------------------------------
+# Step 5: Model Training
+# --------------------------------------------------
+print("\n[5/6] Training model...")
+
+model = LogisticRegression(
+    max_iter=1000,
+    C=2,
+    class_weight='balanced'
+)
+
 model.fit(X_train_tfidf, y_train)
-print("    Model training completed!")
 
-# Step 6: Evaluate Model
-print("\n[EVALUATING] Model performance...")
+# --------------------------------------------------
+# Step 6: Evaluation
+# --------------------------------------------------
+print("\n[6/6] Evaluating model...")
+
 y_pred = model.predict(X_test_tfidf)
+
 accuracy = accuracy_score(y_test, y_pred)
+print(f"\nAccuracy: {accuracy * 100:.2f}%\n")
 
-print(f"\n    ACCURACY: {accuracy * 100:.2f}%")
-print("\n    CLASSIFICATION REPORT:")
-print(classification_report(y_test, y_pred, target_names=['HAM', 'SPAM']))
+print("Classification Report:")
+print(classification_report(y_test, y_pred, target_names=["HAM", "SPAM"]))
 
-print("\n    CONFUSION MATRIX:")
+print("Confusion Matrix:")
 cm = confusion_matrix(y_test, y_pred)
-print(f"    True Negatives: {cm[0][0]}, False Positives: {cm[0][1]}")
-print(f"    False Negatives: {cm[1][0]}, True Positives: {cm[1][1]}")
+print(f"TN: {cm[0][0]}, FP: {cm[0][1]}")
+print(f"FN: {cm[1][0]}, TP: {cm[1][1]}")
 
-# Step 7: Save model and vectorizer
-print("\n[SAVING] Saving model and vectorizer...")
-joblib.dump(model, 'spam_model.pkl')
-joblib.dump(vectorizer, 'vectorizer.pkl')
-print("    Model saved as 'spam_model.pkl'")
-print("    Vectorizer saved as 'vectorizer.pkl'")
+# --------------------------------------------------
+# Save Model
+# --------------------------------------------------
+print("\nSaving model...")
 
-# Verify files exist
-if os.path.exists('spam_model.pkl') and os.path.exists('vectorizer.pkl'):
-    print("\n" + "=" * 60)
-    print("TRAINING COMPLETED SUCCESSFULLY!")
-    print("=" * 60)
-    print("\nModel is ready to predict new emails!")
-else:
-    print("\nERROR: Files were not created properly!")
+joblib.dump(model, "spam_model.pkl")
+joblib.dump(vectorizer, "vectorizer.pkl")
 
-# Step 8: Test with sample predictions
+print("Model saved successfully!")
+
+# --------------------------------------------------
+# Quick Testing
+# --------------------------------------------------
 print("\n" + "=" * 60)
-print("TESTING WITH SAMPLE EMAILS")
+print("SAMPLE TESTING")
 print("=" * 60)
 
 test_emails = [
-    "Congratulations! You've won a lottery!",
-    "Can we schedule a meeting for tomorrow?",
-    "Make money fast from home!",
-    "Please find attached the report."
+    "Congratulations! You have won 5000 dollars!",
+    "Let's meet tomorrow for the project discussion.",
+    "Limited time offer! Claim your reward now!",
+    "Please review the attached document."
 ]
 
 for email in test_emails:
     cleaned = clean_text(email)
-    tfidf = vectorizer.transform([cleaned])
-    prediction = model.predict(tfidf)[0]
-    probs = model.predict_proba(tfidf)[0]
-    
-    result = "SPAM" if prediction == 1 else "HAM"
-    confidence = max(probs) * 100
-    
+    vec = vectorizer.transform([cleaned])
+
+    pred = model.predict(vec)[0]
+    prob = model.predict_proba(vec)[0]
+
+    label = "SPAM" if pred == 1 else "HAM"
+    confidence = max(prob) * 100
+
     print(f"\nEmail: {email}")
-    print(f"Prediction: {result} ({confidence:.2f}%)")
+    print(f"Prediction: {label} ({confidence:.2f}%)")
+
+print("\nTraining completed successfully!")
