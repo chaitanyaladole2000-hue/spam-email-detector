@@ -1,0 +1,456 @@
+[
+    {
+        "label": "os",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "os",
+        "description": "os",
+        "detail": "os",
+        "documentation": {}
+    },
+    {
+        "label": "sqlite3",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "sqlite3",
+        "description": "sqlite3",
+        "detail": "sqlite3",
+        "documentation": {}
+    },
+    {
+        "label": "datetime",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "Flask",
+        "importPath": "flask",
+        "description": "flask",
+        "isExtraImport": true,
+        "detail": "flask",
+        "documentation": {}
+    },
+    {
+        "label": "render_template",
+        "importPath": "flask",
+        "description": "flask",
+        "isExtraImport": true,
+        "detail": "flask",
+        "documentation": {}
+    },
+    {
+        "label": "request",
+        "importPath": "flask",
+        "description": "flask",
+        "isExtraImport": true,
+        "detail": "flask",
+        "documentation": {}
+    },
+    {
+        "label": "flash",
+        "importPath": "flask",
+        "description": "flask",
+        "isExtraImport": true,
+        "detail": "flask",
+        "documentation": {}
+    },
+    {
+        "label": "redirect",
+        "importPath": "flask",
+        "description": "flask",
+        "isExtraImport": true,
+        "detail": "flask",
+        "documentation": {}
+    },
+    {
+        "label": "url_for",
+        "importPath": "flask",
+        "description": "flask",
+        "isExtraImport": true,
+        "detail": "flask",
+        "documentation": {}
+    },
+    {
+        "label": "predict_spam",
+        "importPath": "detector_sklearn",
+        "description": "detector_sklearn",
+        "isExtraImport": true,
+        "detail": "detector_sklearn",
+        "documentation": {}
+    },
+    {
+        "label": "joblib",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "joblib",
+        "description": "joblib",
+        "detail": "joblib",
+        "documentation": {}
+    },
+    {
+        "label": "re",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "re",
+        "description": "re",
+        "detail": "re",
+        "documentation": {}
+    },
+    {
+        "label": "string",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "string",
+        "description": "string",
+        "detail": "string",
+        "documentation": {}
+    },
+    {
+        "label": "pandas",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "pandas",
+        "description": "pandas",
+        "detail": "pandas",
+        "documentation": {}
+    },
+    {
+        "label": "numpy",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "numpy",
+        "description": "numpy",
+        "detail": "numpy",
+        "documentation": {}
+    },
+    {
+        "label": "train_test_split",
+        "importPath": "sklearn.model_selection",
+        "description": "sklearn.model_selection",
+        "isExtraImport": true,
+        "detail": "sklearn.model_selection",
+        "documentation": {}
+    },
+    {
+        "label": "TfidfVectorizer",
+        "importPath": "sklearn.feature_extraction.text",
+        "description": "sklearn.feature_extraction.text",
+        "isExtraImport": true,
+        "detail": "sklearn.feature_extraction.text",
+        "documentation": {}
+    },
+    {
+        "label": "LogisticRegression",
+        "importPath": "sklearn.linear_model",
+        "description": "sklearn.linear_model",
+        "isExtraImport": true,
+        "detail": "sklearn.linear_model",
+        "documentation": {}
+    },
+    {
+        "label": "accuracy_score",
+        "importPath": "sklearn.metrics",
+        "description": "sklearn.metrics",
+        "isExtraImport": true,
+        "detail": "sklearn.metrics",
+        "documentation": {}
+    },
+    {
+        "label": "classification_report",
+        "importPath": "sklearn.metrics",
+        "description": "sklearn.metrics",
+        "isExtraImport": true,
+        "detail": "sklearn.metrics",
+        "documentation": {}
+    },
+    {
+        "label": "confusion_matrix",
+        "importPath": "sklearn.metrics",
+        "description": "sklearn.metrics",
+        "isExtraImport": true,
+        "detail": "sklearn.metrics",
+        "documentation": {}
+    },
+    {
+        "label": "init_db",
+        "kind": 2,
+        "importPath": "app",
+        "description": "app",
+        "peekOfCode": "def init_db():\n    conn = sqlite3.connect(DB_PATH)\n    conn.execute(\"\"\"\n        CREATE TABLE IF NOT EXISTS history (\n            id         INTEGER PRIMARY KEY AUTOINCREMENT,\n            email      TEXT    NOT NULL,\n            prediction TEXT    NOT NULL,\n            confidence REAL    NOT NULL,\n            is_spam    INTEGER NOT NULL,\n            checked_at TEXT    NOT NULL",
+        "detail": "app",
+        "documentation": {}
+    },
+    {
+        "label": "save_result",
+        "kind": 2,
+        "importPath": "app",
+        "description": "app",
+        "peekOfCode": "def save_result(result):\n    conn = sqlite3.connect(DB_PATH)\n    conn.execute(\"\"\"\n        INSERT INTO history (email, prediction, confidence, is_spam, checked_at)\n        VALUES (?, ?, ?, ?, ?)\n    \"\"\", (\n        result[\"email_text\"],\n        result[\"prediction\"],\n        result[\"confidence\"],\n        1 if result[\"is_spam\"] else 0,",
+        "detail": "app",
+        "documentation": {}
+    },
+    {
+        "label": "get_history",
+        "kind": 2,
+        "importPath": "app",
+        "description": "app",
+        "peekOfCode": "def get_history():\n    conn = sqlite3.connect(DB_PATH)\n    conn.row_factory = sqlite3.Row\n    rows = conn.execute(\"\"\"\n        SELECT * FROM history ORDER BY id DESC LIMIT 10\n    \"\"\").fetchall()\n    total = conn.execute(\"SELECT COUNT(*) FROM history\").fetchone()[0]\n    spam  = conn.execute(\"SELECT COUNT(*) FROM history WHERE is_spam=1\").fetchone()[0]\n    ham   = conn.execute(\"SELECT COUNT(*) FROM history WHERE is_spam=0\").fetchone()[0]\n    conn.close()",
+        "detail": "app",
+        "documentation": {}
+    },
+    {
+        "label": "clear_db",
+        "kind": 2,
+        "importPath": "app",
+        "description": "app",
+        "peekOfCode": "def clear_db():\n    conn = sqlite3.connect(DB_PATH)\n    conn.execute(\"DELETE FROM history\")\n    conn.commit()\n    conn.close()\n# ── Routes ─────────────────────────────────────────────────────\n@app.route(\"/\")\ndef index():\n    return render_template(\"index.html\")\n@app.route(\"/predict\", methods=[\"GET\", \"POST\"])",
+        "detail": "app",
+        "documentation": {}
+    },
+    {
+        "label": "index",
+        "kind": 2,
+        "importPath": "app",
+        "description": "app",
+        "peekOfCode": "def index():\n    return render_template(\"index.html\")\n@app.route(\"/predict\", methods=[\"GET\", \"POST\"])\ndef predict():\n    if request.method == \"POST\":\n        email_text = request.form.get(\"email_text\", \"\").strip()\n        if not email_text:\n            flash(\"Please enter email content to check!\", \"error\")\n            return redirect(url_for(\"predict\"))\n        if len(email_text) < 10:",
+        "detail": "app",
+        "documentation": {}
+    },
+    {
+        "label": "predict",
+        "kind": 2,
+        "importPath": "app",
+        "description": "app",
+        "peekOfCode": "def predict():\n    if request.method == \"POST\":\n        email_text = request.form.get(\"email_text\", \"\").strip()\n        if not email_text:\n            flash(\"Please enter email content to check!\", \"error\")\n            return redirect(url_for(\"predict\"))\n        if len(email_text) < 10:\n            flash(\"Email content is too short. Please enter more text.\", \"error\")\n            return redirect(url_for(\"predict\"))\n        result = predict_spam(email_text)",
+        "detail": "app",
+        "documentation": {}
+    },
+    {
+        "label": "about",
+        "kind": 2,
+        "importPath": "app",
+        "description": "app",
+        "peekOfCode": "def about():\n    return render_template(\"about.html\")\n@app.route(\"/check-again\")\ndef check_again():\n    return redirect(url_for(\"predict\"))\n@app.route(\"/clear-history\")\ndef clear_history():\n    clear_db()\n    flash(\"History cleared!\", \"success\")\n    return redirect(url_for(\"predict\"))",
+        "detail": "app",
+        "documentation": {}
+    },
+    {
+        "label": "check_again",
+        "kind": 2,
+        "importPath": "app",
+        "description": "app",
+        "peekOfCode": "def check_again():\n    return redirect(url_for(\"predict\"))\n@app.route(\"/clear-history\")\ndef clear_history():\n    clear_db()\n    flash(\"History cleared!\", \"success\")\n    return redirect(url_for(\"predict\"))\n# ── Error handlers ─────────────────────────────────────────────\n@app.errorhandler(404)\ndef page_not_found(e):",
+        "detail": "app",
+        "documentation": {}
+    },
+    {
+        "label": "clear_history",
+        "kind": 2,
+        "importPath": "app",
+        "description": "app",
+        "peekOfCode": "def clear_history():\n    clear_db()\n    flash(\"History cleared!\", \"success\")\n    return redirect(url_for(\"predict\"))\n# ── Error handlers ─────────────────────────────────────────────\n@app.errorhandler(404)\ndef page_not_found(e):\n    return render_template(\"index.html\", error=\"Page not found!\"), 404\n@app.errorhandler(500)\ndef internal_error(e):",
+        "detail": "app",
+        "documentation": {}
+    },
+    {
+        "label": "page_not_found",
+        "kind": 2,
+        "importPath": "app",
+        "description": "app",
+        "peekOfCode": "def page_not_found(e):\n    return render_template(\"index.html\", error=\"Page not found!\"), 404\n@app.errorhandler(500)\ndef internal_error(e):\n    return render_template(\"index.html\", error=\"Internal server error!\"), 500\n# ── Startup ────────────────────────────────────────────────────\nif __name__ == \"__main__\":\n    init_db()\n    sklearn_ready = os.path.exists(\"spam_model.pkl\") and os.path.exists(\"vectorizer.pkl\")\n    print(\"\\n\" + \"=\" * 60)",
+        "detail": "app",
+        "documentation": {}
+    },
+    {
+        "label": "internal_error",
+        "kind": 2,
+        "importPath": "app",
+        "description": "app",
+        "peekOfCode": "def internal_error(e):\n    return render_template(\"index.html\", error=\"Internal server error!\"), 500\n# ── Startup ────────────────────────────────────────────────────\nif __name__ == \"__main__\":\n    init_db()\n    sklearn_ready = os.path.exists(\"spam_model.pkl\") and os.path.exists(\"vectorizer.pkl\")\n    print(\"\\n\" + \"=\" * 60)\n    print(\"MODEL STATUS\")\n    print(\"=\" * 60)\n    print(f\"  sklearn  : {'✓ Ready' if sklearn_ready else '✗ Missing → run train_model.py'}\")",
+        "detail": "app",
+        "documentation": {}
+    },
+    {
+        "label": "app",
+        "kind": 5,
+        "importPath": "app",
+        "description": "app",
+        "peekOfCode": "app = Flask(__name__)\napp.secret_key = \"spam_detector_secret_key_2024\"\nDB_PATH = \"history.db\"\n# ── Database setup ─────────────────────────────────────────────\ndef init_db():\n    conn = sqlite3.connect(DB_PATH)\n    conn.execute(\"\"\"\n        CREATE TABLE IF NOT EXISTS history (\n            id         INTEGER PRIMARY KEY AUTOINCREMENT,\n            email      TEXT    NOT NULL,",
+        "detail": "app",
+        "documentation": {}
+    },
+    {
+        "label": "app.secret_key",
+        "kind": 5,
+        "importPath": "app",
+        "description": "app",
+        "peekOfCode": "app.secret_key = \"spam_detector_secret_key_2024\"\nDB_PATH = \"history.db\"\n# ── Database setup ─────────────────────────────────────────────\ndef init_db():\n    conn = sqlite3.connect(DB_PATH)\n    conn.execute(\"\"\"\n        CREATE TABLE IF NOT EXISTS history (\n            id         INTEGER PRIMARY KEY AUTOINCREMENT,\n            email      TEXT    NOT NULL,\n            prediction TEXT    NOT NULL,",
+        "detail": "app",
+        "documentation": {}
+    },
+    {
+        "label": "DB_PATH",
+        "kind": 5,
+        "importPath": "app",
+        "description": "app",
+        "peekOfCode": "DB_PATH = \"history.db\"\n# ── Database setup ─────────────────────────────────────────────\ndef init_db():\n    conn = sqlite3.connect(DB_PATH)\n    conn.execute(\"\"\"\n        CREATE TABLE IF NOT EXISTS history (\n            id         INTEGER PRIMARY KEY AUTOINCREMENT,\n            email      TEXT    NOT NULL,\n            prediction TEXT    NOT NULL,\n            confidence REAL    NOT NULL,",
+        "detail": "app",
+        "documentation": {}
+    },
+    {
+        "label": "clean_text",
+        "kind": 2,
+        "importPath": "detector_sklearn",
+        "description": "detector_sklearn",
+        "peekOfCode": "def clean_text(text):\n    text = str(text).lower()\n    text = re.sub(r\"http\\S+|www\\S+\", \" url \", text)\n    text = re.sub(r\"\\S+@\\S+\", \" email \", text)\n    text = re.sub(r\"\\d+\", \" num \", text)\n    text = text.translate(str.maketrans(\"\", \"\", string.punctuation))\n    text = \" \".join(text.split())\n    return text\n# ── Prediction ─────────────────────────────────────────────────\ndef predict_spam(text):",
+        "detail": "detector_sklearn",
+        "documentation": {}
+    },
+    {
+        "label": "predict_spam",
+        "kind": 2,
+        "importPath": "detector_sklearn",
+        "description": "detector_sklearn",
+        "peekOfCode": "def predict_spam(text):\n    try:\n        _load()\n        cleaned  = clean_text(text)\n        vec      = _vectorizer.transform([cleaned])\n        pred     = _model.predict(vec)[0]\n        prob     = _model.predict_proba(vec)[0]\n        label    = \"SPAM\" if pred == 1 else \"HAM\"\n        confidence = float(max(prob))\n        return {",
+        "detail": "detector_sklearn",
+        "documentation": {}
+    },
+    {
+        "label": "_VECTORIZER_PATH",
+        "kind": 5,
+        "importPath": "detector_sklearn",
+        "description": "detector_sklearn",
+        "peekOfCode": "_VECTORIZER_PATH = \"vectorizer.pkl\"\n_model      = None\n_vectorizer = None\ndef _load():\n    global _model, _vectorizer\n    if _model is None:\n        if not os.path.exists(_MODEL_PATH) or not os.path.exists(_VECTORIZER_PATH):\n            raise FileNotFoundError(\n                \"sklearn model files not found. Run train_model.py first.\"\n            )",
+        "detail": "detector_sklearn",
+        "documentation": {}
+    },
+    {
+        "label": "_vectorizer",
+        "kind": 5,
+        "importPath": "detector_sklearn",
+        "description": "detector_sklearn",
+        "peekOfCode": "_vectorizer = None\ndef _load():\n    global _model, _vectorizer\n    if _model is None:\n        if not os.path.exists(_MODEL_PATH) or not os.path.exists(_VECTORIZER_PATH):\n            raise FileNotFoundError(\n                \"sklearn model files not found. Run train_model.py first.\"\n            )\n        _model      = joblib.load(_MODEL_PATH)\n        _vectorizer = joblib.load(_VECTORIZER_PATH)",
+        "detail": "detector_sklearn",
+        "documentation": {}
+    },
+    {
+        "label": "clean_text",
+        "kind": 2,
+        "importPath": "train_model",
+        "description": "train_model",
+        "peekOfCode": "def clean_text(text):\n    text = str(text).lower()\n    text = re.sub(r\"http\\S+|www\\S+\", \" url \", text)       # URL token\n    text = re.sub(r\"\\S+@\\S+\", \" email \", text)            # EMAIL token\n    text = re.sub(r\"\\d+\", \" num \", text)                  # NUMBER token\n    text = text.translate(str.maketrans(\"\", \"\", string.punctuation))\n    text = \" \".join(text.split())\n    return text\ndf[\"cleaned\"] = df[\"message\"].apply(clean_text)\n# ── 3. Train-Test Split ────────────────────────────────────────",
+        "detail": "train_model",
+        "documentation": {}
+    },
+    {
+        "label": "df",
+        "kind": 5,
+        "importPath": "train_model",
+        "description": "train_model",
+        "peekOfCode": "df = pd.read_csv(\"spam.tsv\", sep=\"\\t\", encoding=\"latin-1\")\ndf = df[[\"label\", \"message\"]]\ndf = df[df[\"label\"].isin([\"ham\", \"spam\"])]      # drop malformed rows\ndf = df.dropna(subset=[\"message\"])\ndf[\"label\"] = df[\"label\"].map({\"spam\": 1, \"ham\": 0})\nprint(f\"  Total  : {len(df)}\")\nprint(f\"  Spam   : {df['label'].sum()}\")\nprint(f\"  Ham    : {(df['label'] == 0).sum()}\")\n# ── 2. Clean Text ──────────────────────────────────────────────\nprint(\"\\n[2/6] Cleaning text...\")",
+        "detail": "train_model",
+        "documentation": {}
+    },
+    {
+        "label": "df",
+        "kind": 5,
+        "importPath": "train_model",
+        "description": "train_model",
+        "peekOfCode": "df = df[[\"label\", \"message\"]]\ndf = df[df[\"label\"].isin([\"ham\", \"spam\"])]      # drop malformed rows\ndf = df.dropna(subset=[\"message\"])\ndf[\"label\"] = df[\"label\"].map({\"spam\": 1, \"ham\": 0})\nprint(f\"  Total  : {len(df)}\")\nprint(f\"  Spam   : {df['label'].sum()}\")\nprint(f\"  Ham    : {(df['label'] == 0).sum()}\")\n# ── 2. Clean Text ──────────────────────────────────────────────\nprint(\"\\n[2/6] Cleaning text...\")\ndef clean_text(text):",
+        "detail": "train_model",
+        "documentation": {}
+    },
+    {
+        "label": "df",
+        "kind": 5,
+        "importPath": "train_model",
+        "description": "train_model",
+        "peekOfCode": "df = df[df[\"label\"].isin([\"ham\", \"spam\"])]      # drop malformed rows\ndf = df.dropna(subset=[\"message\"])\ndf[\"label\"] = df[\"label\"].map({\"spam\": 1, \"ham\": 0})\nprint(f\"  Total  : {len(df)}\")\nprint(f\"  Spam   : {df['label'].sum()}\")\nprint(f\"  Ham    : {(df['label'] == 0).sum()}\")\n# ── 2. Clean Text ──────────────────────────────────────────────\nprint(\"\\n[2/6] Cleaning text...\")\ndef clean_text(text):\n    text = str(text).lower()",
+        "detail": "train_model",
+        "documentation": {}
+    },
+    {
+        "label": "df",
+        "kind": 5,
+        "importPath": "train_model",
+        "description": "train_model",
+        "peekOfCode": "df = df.dropna(subset=[\"message\"])\ndf[\"label\"] = df[\"label\"].map({\"spam\": 1, \"ham\": 0})\nprint(f\"  Total  : {len(df)}\")\nprint(f\"  Spam   : {df['label'].sum()}\")\nprint(f\"  Ham    : {(df['label'] == 0).sum()}\")\n# ── 2. Clean Text ──────────────────────────────────────────────\nprint(\"\\n[2/6] Cleaning text...\")\ndef clean_text(text):\n    text = str(text).lower()\n    text = re.sub(r\"http\\S+|www\\S+\", \" url \", text)       # URL token",
+        "detail": "train_model",
+        "documentation": {}
+    },
+    {
+        "label": "df[\"label\"]",
+        "kind": 5,
+        "importPath": "train_model",
+        "description": "train_model",
+        "peekOfCode": "df[\"label\"] = df[\"label\"].map({\"spam\": 1, \"ham\": 0})\nprint(f\"  Total  : {len(df)}\")\nprint(f\"  Spam   : {df['label'].sum()}\")\nprint(f\"  Ham    : {(df['label'] == 0).sum()}\")\n# ── 2. Clean Text ──────────────────────────────────────────────\nprint(\"\\n[2/6] Cleaning text...\")\ndef clean_text(text):\n    text = str(text).lower()\n    text = re.sub(r\"http\\S+|www\\S+\", \" url \", text)       # URL token\n    text = re.sub(r\"\\S+@\\S+\", \" email \", text)            # EMAIL token",
+        "detail": "train_model",
+        "documentation": {}
+    },
+    {
+        "label": "df[\"cleaned\"]",
+        "kind": 5,
+        "importPath": "train_model",
+        "description": "train_model",
+        "peekOfCode": "df[\"cleaned\"] = df[\"message\"].apply(clean_text)\n# ── 3. Train-Test Split ────────────────────────────────────────\nprint(\"\\n[3/6] Splitting dataset (80/20, stratified)...\")\nX_train, X_test, y_train, y_test = train_test_split(\n    df[\"cleaned\"], df[\"label\"],\n    test_size=0.2, random_state=42, stratify=df[\"label\"]\n)\nprint(f\"  Train: {len(X_train)} | Test: {len(X_test)}\")\n# ── 4. TF-IDF Vectorization ────────────────────────────────────\nprint(\"\\n[4/6] Building TF-IDF features...\")",
+        "detail": "train_model",
+        "documentation": {}
+    },
+    {
+        "label": "vectorizer",
+        "kind": 5,
+        "importPath": "train_model",
+        "description": "train_model",
+        "peekOfCode": "vectorizer = TfidfVectorizer(\n    max_features=10000,\n    ngram_range=(1, 3),       # unigrams, bigrams, trigrams\n    stop_words=\"english\",\n    sublinear_tf=True,        # log(1+tf) — dampens high freq terms\n    min_df=2                  # ignore ultra-rare terms\n)\nX_train_tfidf = vectorizer.fit_transform(X_train)\nX_test_tfidf  = vectorizer.transform(X_test)\nprint(f\"  Features: {X_train_tfidf.shape[1]}\")",
+        "detail": "train_model",
+        "documentation": {}
+    },
+    {
+        "label": "X_train_tfidf",
+        "kind": 5,
+        "importPath": "train_model",
+        "description": "train_model",
+        "peekOfCode": "X_train_tfidf = vectorizer.fit_transform(X_train)\nX_test_tfidf  = vectorizer.transform(X_test)\nprint(f\"  Features: {X_train_tfidf.shape[1]}\")\n# ── 5. Train Model ─────────────────────────────────────────────\nprint(\"\\n[5/6] Training Logistic Regression...\")\nmodel = LogisticRegression(\n    max_iter=1000,\n    C=5,                      # stronger regularization relaxation\n    class_weight=\"balanced\",\n    solver=\"lbfgs\"",
+        "detail": "train_model",
+        "documentation": {}
+    },
+    {
+        "label": "model",
+        "kind": 5,
+        "importPath": "train_model",
+        "description": "train_model",
+        "peekOfCode": "model = LogisticRegression(\n    max_iter=1000,\n    C=5,                      # stronger regularization relaxation\n    class_weight=\"balanced\",\n    solver=\"lbfgs\"\n)\nmodel.fit(X_train_tfidf, y_train)\n# ── 6. Evaluate ────────────────────────────────────────────────\nprint(\"\\n[6/6] Evaluating...\")\ny_pred = model.predict(X_test_tfidf)",
+        "detail": "train_model",
+        "documentation": {}
+    },
+    {
+        "label": "y_pred",
+        "kind": 5,
+        "importPath": "train_model",
+        "description": "train_model",
+        "peekOfCode": "y_pred = model.predict(X_test_tfidf)\nacc = accuracy_score(y_test, y_pred)\nprint(f\"\\n  Accuracy : {acc * 100:.2f}%\\n\")\nprint(\"  Classification Report:\")\nprint(classification_report(y_test, y_pred, target_names=[\"HAM\", \"SPAM\"]))\ncm = confusion_matrix(y_test, y_pred)\nprint(\"  Confusion Matrix:\")\nprint(f\"  TN:{cm[0][0]}  FP:{cm[0][1]}\")\nprint(f\"  FN:{cm[1][0]}  TP:{cm[1][1]}\")\n# ── Save ───────────────────────────────────────────────────────",
+        "detail": "train_model",
+        "documentation": {}
+    },
+    {
+        "label": "acc",
+        "kind": 5,
+        "importPath": "train_model",
+        "description": "train_model",
+        "peekOfCode": "acc = accuracy_score(y_test, y_pred)\nprint(f\"\\n  Accuracy : {acc * 100:.2f}%\\n\")\nprint(\"  Classification Report:\")\nprint(classification_report(y_test, y_pred, target_names=[\"HAM\", \"SPAM\"]))\ncm = confusion_matrix(y_test, y_pred)\nprint(\"  Confusion Matrix:\")\nprint(f\"  TN:{cm[0][0]}  FP:{cm[0][1]}\")\nprint(f\"  FN:{cm[1][0]}  TP:{cm[1][1]}\")\n# ── Save ───────────────────────────────────────────────────────\nprint(\"\\nSaving model files...\")",
+        "detail": "train_model",
+        "documentation": {}
+    },
+    {
+        "label": "cm",
+        "kind": 5,
+        "importPath": "train_model",
+        "description": "train_model",
+        "peekOfCode": "cm = confusion_matrix(y_test, y_pred)\nprint(\"  Confusion Matrix:\")\nprint(f\"  TN:{cm[0][0]}  FP:{cm[0][1]}\")\nprint(f\"  FN:{cm[1][0]}  TP:{cm[1][1]}\")\n# ── Save ───────────────────────────────────────────────────────\nprint(\"\\nSaving model files...\")\njoblib.dump(model,      \"spam_model.pkl\")\njoblib.dump(vectorizer, \"vectorizer.pkl\")\nprint(\"  ✓ spam_model.pkl\")\nprint(\"  ✓ vectorizer.pkl\")",
+        "detail": "train_model",
+        "documentation": {}
+    }
+]
